@@ -29,11 +29,12 @@ import UIKit
 class MenuItemView: UIView {
     // MARK: - Menu item view
     
-    var titleLabel : UILabel?
+    var titleLabel : CostumLabel?
     var menuItemSeparator : UIView?
     
-    func setUpMenuItemView(menuItemWidth: CGFloat, menuScrollViewHeight: CGFloat, indicatorHeight: CGFloat, separatorPercentageHeight: CGFloat, separatorWidth: CGFloat, separatorRoundEdges: Bool, menuItemSeparatorColor: UIColor) {
-        titleLabel = UILabel(frame: CGRectMake(0.0, 0.0, menuItemWidth, menuScrollViewHeight - indicatorHeight))
+    func setUpMenuItemView(menuItemWidth: CGFloat, menuScrollViewHeight: CGFloat, indicatorHeight: CGFloat, separatorPercentageHeight: CGFloat, separatorWidth: CGFloat, separatorRoundEdges: Bool, menuItemSeparatorColor: UIColor, menuPadding : UIEdgeInsets) {
+        titleLabel = CostumLabel(frame: CGRectMake(0.0, 0.0, menuItemWidth, menuScrollViewHeight - indicatorHeight))
+        titleLabel?.setPaddingByUIEdgeInsets(menuPadding)
         
         menuItemSeparator = UIView(frame: CGRectMake(menuItemWidth - (separatorWidth / 2), floor(menuScrollViewHeight * ((1.0 - separatorPercentageHeight) / 2.0)), separatorWidth, floor(menuScrollViewHeight * separatorPercentageHeight)))
         menuItemSeparator!.backgroundColor = menuItemSeparatorColor
@@ -57,6 +58,34 @@ class MenuItemView: UIView {
     }
 }
 
+class CostumLabel: UILabel {
+    
+    var padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    
+    func setPadding(top : CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat){
+        padding.top = top
+        padding.left = left
+        padding.right = right
+        padding.bottom = bottom
+    }
+    
+    func setPaddingByUIEdgeInsets(padding : UIEdgeInsets){
+        self.padding = padding
+    }
+    
+    override func drawTextInRect(rect: CGRect) {
+        let newRect = UIEdgeInsetsInsetRect(rect, padding)
+        super.drawTextInRect(newRect)
+    }
+    
+    override func intrinsicContentSize() -> CGSize {
+        var intrinsicContentSize = super.intrinsicContentSize()
+        intrinsicContentSize.height += padding.top + padding.bottom
+        intrinsicContentSize.width += padding.left + padding.right
+        return intrinsicContentSize
+    }
+}
+
 public enum CAPSPageMenuOption {
     case SelectionIndicatorHeight(CGFloat)
     case MenuItemSeparatorWidth(CGFloat)
@@ -66,7 +95,9 @@ public enum CAPSPageMenuOption {
     case SelectionIndicatorColor(UIColor)
     case MenuItemSeparatorColor(UIColor)
     case MenuMargin(CGFloat)
+    case MenuMarginFromTop(CGFloat)
     case MenuItemMargin(CGFloat)
+    case MenuItemPadding(UIEdgeInsets)
     case MenuHeight(CGFloat)
     case SelectedMenuItemLabelColor(UIColor)
     case UnselectedMenuItemLabelColor(UIColor)
@@ -102,6 +133,7 @@ public class CAPSPageMenu: UIViewController, UIScrollViewDelegate, UIGestureReco
     public var scrollAnimationDurationOnMenuItemTap : Int = 500 // Millisecons
     var startingMenuMargin : CGFloat = 0.0
     var menuItemMargin : CGFloat = 0.0
+    var menuMarginFromTop : CGFloat = 0.0
     
     var selectionIndicatorView : UIView = UIView()
     
@@ -120,6 +152,7 @@ public class CAPSPageMenu: UIViewController, UIScrollViewDelegate, UIGestureReco
     public var menuItemSeparatorPercentageHeight : CGFloat = 0.2
     public var menuItemSeparatorWidth : CGFloat = 0.5
     public var menuItemSeparatorRoundEdges : Bool = false
+    public var menuItemPadding : UIEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     
     public var addBottomMenuHairline : Bool = true
     public var menuItemWidthBasedOnTitleTextWidth : Bool = false
@@ -191,8 +224,12 @@ public class CAPSPageMenu: UIViewController, UIScrollViewDelegate, UIGestureReco
                     menuItemSeparatorColor = value
                 case let .MenuMargin(value):
                     menuMargin = value
+                case let .MenuMarginFromTop(value):
+                    menuMarginFromTop = value
                 case let .MenuItemMargin(value):
                     menuItemMargin = value
+                case let .MenuItemPadding(value):
+                    menuItemPadding = value
                 case let .MenuHeight(value):
                     menuHeight = value
                 case let .SelectedMenuItemLabelColor(value):
@@ -398,13 +435,13 @@ public class CAPSPageMenu: UIViewController, UIScrollViewDelegate, UIGestureReco
                 if menuItemMargin > 0 {
                     let marginSum = menuItemMargin * CGFloat(controllerArray.count + 1)
                     let menuItemWidth = (self.view.frame.width - marginSum) / CGFloat(controllerArray.count)
-                    menuItemView.setUpMenuItemView(menuItemWidth, menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor)
+                    menuItemView.setUpMenuItemView(menuItemWidth, menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor, menuPadding: menuItemPadding)
                 } else {
-                    menuItemView.setUpMenuItemView(CGFloat(self.view.frame.width) / CGFloat(controllerArray.count), menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor)
+                    menuItemView.setUpMenuItemView(CGFloat(self.view.frame.width) / CGFloat(controllerArray.count), menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor, menuPadding: menuItemPadding)
                 }
                 //**************************拡張ここまで*************************************
             } else {
-                menuItemView.setUpMenuItemView(menuItemWidth, menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor)
+                menuItemView.setUpMenuItemView(menuItemWidth, menuScrollViewHeight: menuHeight, indicatorHeight: selectionIndicatorHeight, separatorPercentageHeight: menuItemSeparatorPercentageHeight, separatorWidth: menuItemSeparatorWidth, separatorRoundEdges: menuItemSeparatorRoundEdges, menuItemSeparatorColor: menuItemSeparatorColor, menuPadding: menuItemPadding)
             }
             
             // Configure menu item label font if font is set by user
@@ -1007,3 +1044,4 @@ public class CAPSPageMenu: UIViewController, UIScrollViewDelegate, UIGestureReco
         }
     }
 }
+
