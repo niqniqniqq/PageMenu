@@ -33,8 +33,7 @@ class MenuItemView: UIView {
     var menuItemSeparator : UIView?
     
     func setUpMenuItemView(menuItemWidth: CGFloat, menuScrollViewHeight: CGFloat, indicatorHeight: CGFloat, separatorPercentageHeight: CGFloat, separatorWidth: CGFloat, separatorRoundEdges: Bool, menuItemSeparatorColor: UIColor, menuPadding : UIEdgeInsets) {
-        titleLabel = CostumLabel(frame: CGRectMake(0.0, 0.0, menuItemWidth, menuScrollViewHeight - indicatorHeight))
-        titleLabel?.setPaddingByUIEdgeInsets(menuPadding)
+        titleLabel = CostumLabel(frame: CGRectMake(0.0, 0.0, menuItemWidth, menuScrollViewHeight - indicatorHeight), padding: menuPadding)
         
         menuItemSeparator = UIView(frame: CGRectMake(menuItemWidth - (separatorWidth / 2), floor(menuScrollViewHeight * ((1.0 - separatorPercentageHeight) / 2.0)), separatorWidth, floor(menuScrollViewHeight * separatorPercentageHeight)))
         menuItemSeparator!.backgroundColor = menuItemSeparatorColor
@@ -62,17 +61,23 @@ class CostumLabel: UILabel {
     
     var padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     
-    func setPadding(top : CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat){
+    init(frame: CGRect, top : CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) {
         padding.top = top
         padding.left = left
         padding.right = right
         padding.bottom = bottom
+        super.init(frame: frame)
     }
     
-    func setPaddingByUIEdgeInsets(padding : UIEdgeInsets){
+    init(frame: CGRect, padding : UIEdgeInsets) {
         self.padding = padding
+        super.init(frame: frame)
     }
     
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
     override func drawTextInRect(rect: CGRect) {
         let newRect = UIEdgeInsetsInsetRect(rect, padding)
         super.drawTextInRect(newRect)
